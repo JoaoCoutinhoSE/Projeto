@@ -1,6 +1,7 @@
 // O CODIGO DESTE ARQUIVO DEVERA SER COPIADO PARA PROJETO.C POSTERIORMENTE
 
 #include<stdio.h>
+#include<stdlib.h>
 #include<string.h>
 #include<conio2.h>
 
@@ -31,9 +32,8 @@ typedef unsigned char booleano; //define o tipo booleano como um inteiro de 8 bi
 
 //struct que descreve um componente generico
 typedef struct componente
-{
-	//componente selecionado pelo cursor
-	booleano selecionado;
+{	
+	booleano oculto; //caso seja verdadeiro, o componente não é desenhado
 	
 	//posicao e tamanho do componente
 	int x;
@@ -47,9 +47,9 @@ typedef struct componente
 	int cor_texto;
 	char texto[50];
 	
-	//funcoes do componente
-	void (*desenhar)(struct componente*); //referencia para a funcao que desenha o componente
-	void (*tecla_pressionada)(char); //referencia para a funcao de atividade quando uma tecla e pressionada
+	//funcoes do componente (ponteiros-para-funcao)
+	void (*desenhar)(struct componente*); //ponteiro para a funcao que desenha o componente
+	void (*tecla_pressionada)(char); //ponteiro para a funcao de atividade quando uma tecla e pressionada
 	
 	//indices dos componentes associados no vetor de componentes
 	int componente_esquerdo;
@@ -63,11 +63,15 @@ struct
 {
 	tipo_componente vetor[MAX_COMPONENTES];
 	int topo;
+	int selecionado; //indice do elemento selecionado pelas setas
 }pilha_componentes;
+
+// ----------- funcoes da interface -----------------
 
 void iniciar_interface() //inicializa a interface de usuario
 {
 	pilha_componentes.topo = 0;
+	pilha_componentes.selecionado = -1; //nenhum componente selecionado
 }
 
 void limpar_interface() //tira todos os componentes da interface
@@ -75,22 +79,31 @@ void limpar_interface() //tira todos os componentes da interface
 	pilha_componentes.topo = 0;
 }
 
-void adc_componente(tipo_componente comp) //adiciona componente a interface de usuario
+int adc_componente(tipo_componente comp) //adiciona componente a interface de usuario
 {
-	if(pilha_componentes.topo == MAX_COMPONENTES-1) return; //pilha cheia
+	if(pilha_componentes.topo == MAX_COMPONENTES-1) //pilha cheia
+	{
+		printf("erro: pilha de componentes cheia");
+		getchar();
+		exit(1);
+	}
 		
 	pilha_componentes.vetor[pilha_componentes.topo] = comp; //copia o comp para o vetor
-	pilha_componentes.topo++;
+	return pilha_componentes.topo++; //retorna o valor de todo antes do incremento
 }
 
 void rm_ultimo_componente() //remove o ultimo componente colocado na pilha
 {
+	if(pilha_componentes.topo == 0) return; //pilha vazia
+		
 	pilha_componentes.topo--;
 }
 
 void rm_componente(int indice) //remover componente especifico
 {
 	int i;
+	if(pilha_componentes.topo == 0) return; //pilha vazia
+		
 	if(indice < 0 || indice > MAX_COMPONENTES-1) return; //indice invalido
 	
 	for(i = indice; i < pilha_componentes.topo; i++) //recuar uma posicao todos os componentes
@@ -106,10 +119,22 @@ void desenhar_interface()
 	int i;
 	for(i = 0; i < pilha_componentes.topo; i++)
 	{
-		//chama a funcao de desenhar de cada componente e passa ele mesmo como parametro por referencia
-		pilha_componentes.vetor[i].desenhar(&pilha_componentes.vetor[i]);
+		if(pilha_componentes.vetor[i].oculto == FALSO) //se o componente não estiver oculto
+		{
+			//chama a funcao de desenhar de cada componente e passa ele mesmo como parametro por referencia
+			pilha_componentes.vetor[i].desenhar(&pilha_componentes.vetor[i]);
+		}
 	}
-	
+}
+
+void esperar_tecla()
+{
+	   char tecla = getch();
+	   if(pilha_componentes.selecionado != -1) //o -1 indica que nenhum componente foi selecionado
+	   {
+	   		//chama a funcao do componente selecionado que trata o pressionamento de teclas 
+	   		pilha_componentes.vetor[pilha_componentes.selecionado].tecla_pressionada(tecla);
+	   }	
 }
 
 // ---- funcoes dos componentes -----
@@ -122,29 +147,80 @@ void desenhar_nome(tipo_componente *comp)
 	printf("%s", comp->texto);
 }
 
+void desenhar_quadrado(tipo_componente *comp)
+{	//esta funcao desenha um quadrado
+	int x, y;
+	textcolor(comp->cor_texto);
+	textbackground(comp->cor_fundo);
+	
+	//preencher espaco
+	for(x = comp->x; x <= comp->x + comp->largura; x++)
+	{
+		   for(y = comp->y; y <= comp->y + comp->altura; y++)
+		   {
+		   		gotoxy(x,y);
+		   		printf(" ");
+		   }	
+	}
+	
+	//desenhar bordas
+	for(x = comp->x; x <= comp->x + comp->largura; x++) //bordas horizontais
+	{
+		//borda de cima
+		gotoxy(x, comp->y);
+		printf("%c", GRADE_H);
+		//borda de baixo 
+		gotoxy(x, comp->y + comp->altura);
+		printf("%c", GRADE_H);
+	}
+	
+	for(y = comp->y; y <= comp->y + comp->altura; y++) //bordas verticais
+	{
+		//borda esquerda
+		gotoxy(comp->x,y); 
+		printf("%c", GRADE_V);
+		//borda direita
+		gotoxy(comp->x + comp->largura,y); 
+		printf("%c", GRADE_V);
+	}
+	
+	//desenhar cantos
+	gotoxy(comp->x, comp->y); //superior esquerdo
+	printf("%c", GRADE_SE);
+	gotoxy(comp->x + comp->largura, comp->y); //superior direito
+	printf("%c", GRADE_SD);
+	gotoxy(comp->x, comp->y + comp->altura); //inferior esquerdo
+	printf("%c", GRADE_IE);
+	gotoxy(comp->x + comp->largura, comp->y + comp->altura); //inferior direito
+	printf("%c", GRADE_ID);
+}
+
 int main()
 {
 	iniciar_interface();
 	
-	//criando primeiro nome
+	//criando quadrado
+	tipo_componente quadrado;
+	quadrado.oculto = FALSO;
+	quadrado.x = 2;
+	quadrado.y = 2;
+	quadrado.largura = 15;
+	quadrado.altura = 5;
+	quadrado.cor_fundo = CINZA;
+	quadrado.cor_texto = AZUL;
+	quadrado.desenhar = desenhar_quadrado; //funcao que desenha o quadrado
+	adc_componente(quadrado); //adicionando a pilha de componentes
+	
+	//criando nome
 	tipo_componente nome;
-	strcpy(nome.texto, "Filipe");
-	nome.x = 10;
-	nome.y = 10;
+	nome.oculto = FALSO;
+	strcpy(nome.texto, "Jao Pedro");
+	nome.x = 4;
+	nome.y = 4;
 	nome.cor_fundo = CINZA;
 	nome.cor_texto = AZUL;
 	nome.desenhar = desenhar_nome;
 	adc_componente(nome); //adicionando a pilha de componentes
-	
-	//criando segundo nome
-	tipo_componente nome2;
-	strcpy(nome2.texto, "Chagas");
-	nome2.x = 15;
-	nome2.y = 20;
-	nome2.cor_fundo = VERMELHO;
-	nome2.cor_texto = CINZA;
-	nome2.desenhar = desenhar_nome;
-	adc_componente(nome2); //adicionando a pilha de componentes
 	
 	desenhar_interface(); //desenhando todos os componentes
 
