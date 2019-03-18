@@ -99,32 +99,6 @@ void rm_componente(int indice) //remover componente especifico
 	}	
 	
 	pilha_componentes.topo--;
-	
-	/*
-	exemplo:
-		vetor
-		indice: 1 2 3 4 5
-	componente: A B C D E
-		 
-	para remover o componente de indice 3, faço:
-		rm_componente(3);
-	e acontece o seguinte:
-	
-	1° - o elemento 4 é copiado para o indice 3
-             i:3    [i]   (i+1)
-		indice: 1 2 [3]    (4) 5
-	componente: A B [D] <- (D) E
-	
-	2° - o elemento 5 é copiado para o indice 5
-             i:4      [i]   (i+1)
-		indice: 1 2 3 [4]    (5)
-	componente: A B D [E] <- (E)
-	
-	3° - o topo é decrementado
-	topo--;
-		indice: 1 2 3 4
-	componente: A B D E
-	*/
 }
 
 void desenhar_interface()
