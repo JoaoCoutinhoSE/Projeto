@@ -1,5 +1,7 @@
 # Descrição do interface.c
-Ultima atualização: 17/03/19, Filipe Este código utiliza ponteiro-para-função, também conhecido como callback. Pesquise sobre isso.
+Ultima atualização: 17/03/19, Filipe </br>
+![print](https://github.com/PandaZIM/Projeto/blob/modifica%C3%A7%C3%B5esfilipe/interface-17-03-19.png "print")
+</br> Este código utiliza ponteiro-para-função, também conhecido como callback. Pesquise sobre isso.
 
 ## struct componente
 Esta classe-struct contém todas as informações de um componente genérico, como um quadrado, um botão, um menu, etc. Várias structs podem ser criadas a partir desta classe-struct ou do tipo tipo_componente.
@@ -28,7 +30,7 @@ Esta função desenha todos os componentes na pilha de componentes. Ela faz isso
 ## void esperar_tecla()
 Esta função chama, internamente, o getchar. Em seguida, depois que o usuário pressionar alguma tecla, ela chama a função de pressionamento de tecla do componente selecionado, através do callback tecla_pressionada
 
-#Funções que desenham componentes
+# Funções que desenham componentes
 ## void desenhar_nome(tipo_componente *comp)
 Esta função desenha um texto simples e colorido. Ela é chamada pela função desenhar_interface(), e recebe o respectivo componente por referencia no parametro comp.
 
