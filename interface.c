@@ -93,7 +93,7 @@ void rm_componente(int indice) //remover componente especifico
 	int i;
 	if(indice < 0 || indice > MAX_COMPONENTES-1) return; //indice invalido
 	
-	for(i = indice; i < MAX_COMPONENTES; i++) //recuar uma posicao todos os componentes
+	for(i = indice; i < pilha_componentes.topo; i++) //recuar uma posicao todos os componentes
 	{
 		   pilha_componentes.vetor[i] = pilha_componentes.vetor[i+1];	
 	}	
