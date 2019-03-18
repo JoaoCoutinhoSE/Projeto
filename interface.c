@@ -56,6 +56,7 @@ typedef struct componente
 	int componente_direito;
 	int componente_inferior;
 	int componente_superior;
+	int sub_componente; //para os sub-menus
 }tipo_componente;
 
 #define MAX_COMPONENTES 50
